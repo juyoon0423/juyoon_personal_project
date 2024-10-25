@@ -14,6 +14,7 @@ import java.util.Optional;
 public class MemberService {
     private final MemberRepository memberRepository;
 
+
     @Transactional
     // 회원가입
     public Long register(Member member) {
@@ -34,4 +35,6 @@ public class MemberService {
     public Member findById(Long memberId) {
         return memberRepository.findById(memberId).orElse(null);
     }
+
+
 }
