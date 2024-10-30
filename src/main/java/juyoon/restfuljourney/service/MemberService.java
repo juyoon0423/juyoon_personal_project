@@ -1,5 +1,6 @@
 package juyoon.restfuljourney.service;
 
+import juyoon.restfuljourney.dto.MemberDto;
 import juyoon.restfuljourney.entity.Member;
 import juyoon.restfuljourney.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +33,27 @@ public class MemberService {
     }
 
     // 회원 조회
-    public Member findById(Long memberId) {
-        return memberRepository.findById(memberId).orElse(null);
+    public Member findOne(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalStateException("해당 회원을 찾을 수 없습니다."));
     }
 
+    // 회원 탈퇴
+    @Transactional
+    public void delete(Long memberId) {
+        if (!memberRepository.existsById(memberId)) {
+            throw new IllegalStateException("회원 정보가 존재하지 않습니다.");
+        }
+        memberRepository.deleteById(memberId);
+    }
+
+    // 회원 수정
+    @Transactional
+    public void update(Long id, MemberDto memberDto) {
+        Member member = findOne(id);
+        member.setUsername(memberDto.getUsername());
+        member.setEmail(memberDto.getEmail());
+        member.setPassword(memberDto.getPassword());
+    }
 
 }
