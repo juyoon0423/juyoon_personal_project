@@ -17,13 +17,19 @@ public class MemberService {
 
 
     @Transactional
-    // 회원가입
-    public Long register(Member member) {
-        validateDuplicateMember(member);
-        memberRepository.save(member);
-        return member.getId();
-    }
+// 회원가입
+    public Long register(MemberDto memberDto) {
+        Member member = new Member();
+        member.setId(memberDto.getId());
+        member.setUsername(memberDto.getUsername());
+        member.setPassword(memberDto.getPassword());
+        member.setEmail(memberDto.getEmail());
 
+        validateDuplicateMember(member); // 중복 회원 검증
+        memberRepository.save(member); // 회원 정보 저장
+
+        return member.getId(); // 저장된 회원의 ID 반환
+    }
     // 이미 존재하는 회원인지 검증
     private void validateDuplicateMember(Member member) {
         Optional<Member> findMembers = memberRepository.findByEmail(member.getEmail());

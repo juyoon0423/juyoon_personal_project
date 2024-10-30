@@ -1,6 +1,7 @@
 package juyoon.restfuljourney.controller;
 
 import juyoon.restfuljourney.dto.MemberDto;
+import juyoon.restfuljourney.dto.MemberResponseDto;
 import juyoon.restfuljourney.entity.Member;
 import juyoon.restfuljourney.repository.MemberRepository;
 import juyoon.restfuljourney.service.MemberService;
@@ -23,37 +24,38 @@ public class MemberController {
 
     // 회원가입
     @PostMapping("/register")
-    public MemberDto register(@Validated @RequestBody MemberDto memberDto) {
+    public MemberResponseDto register(@Validated @RequestBody MemberDto memberDto) {
         Member member = Member.builder()
+                .id(memberDto.getId())
                 .username(memberDto.getUsername())
                 .password(memberDto.getPassword())
                 .email(memberDto.getEmail())
                 .build();
 
-        Long id = memberService.register(member);
+        Long id = memberService.register(memberDto);
         log.info("username={}, password={}, email={}", member.getUsername(), member.getPassword(), member.getEmail());
 
         Member registeredMember = memberService.findOne(id);
-        return MemberDto.fromEntity(registeredMember); // 등록 후 엔티티를 Dto로 변환해 반환
+        return MemberResponseDto.fromEntity(registeredMember); // 등록 후 엔티티를 Dto로 변환해 반환
     }
 
     // 회원 정보 조회
     @GetMapping("/member/{memberId}")
-    public MemberDto findOne(@PathVariable Long memberId) {
+    public MemberResponseDto findOne(@PathVariable Long memberId) {
         // 멤버 검색
         Member member = memberService.findOne(memberId);
 
-        return MemberDto.fromEntity(member); // 변환 코드 간소화
+        return MemberResponseDto.fromEntity(member); // 변환 코드 간소화
     }
 
     // 전체 회원 조회
     @GetMapping("/members")
     public Result findMembers() {
         List<Member> findMembers = memberRepository.findAll();
-        List<MemberDto> collect = new ArrayList<>();
+        List<MemberResponseDto> collect = new ArrayList<>();
 
         for (Member member : findMembers) {
-            collect.add(MemberDto.fromEntity(member));
+            collect.add(MemberResponseDto.fromEntity(member));
         }
 
         return new Result<>(collect.size(), collect);
@@ -62,14 +64,14 @@ public class MemberController {
 
     // 회원 수정
     @PutMapping("/editMember/{memberId}")
-    public MemberDto editMember(
+    public MemberResponseDto editMember(
             @PathVariable Long memberId,
             @Validated @RequestBody MemberDto memberDto) {
 
         memberService.update(memberId, memberDto);
 
         Member findMember = memberService.findOne(memberId);
-        return MemberDto.fromEntity(findMember); // 변환 코드 간소화
+        return MemberResponseDto.fromEntity(findMember); // 변환 코드 간소화
     }
 
     // 회원 탈퇴
