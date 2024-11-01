@@ -6,6 +6,8 @@ import juyoon.restfuljourney.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
@@ -61,6 +63,12 @@ public class MemberService {
         member.setEmail(memberDto.getEmail());
         member.setPassword(memberDto.getPassword());
     }
+
+    // 페이징 조회
+    public Page<Member> findMembersWithPaging(String username, Pageable pageable) {
+        return memberRepository.findByUsernameContaining(username, pageable);
+    }
+
 
 
 }

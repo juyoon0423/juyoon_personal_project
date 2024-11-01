@@ -9,6 +9,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,18 +52,34 @@ public class MemberController {
         return MemberResponseDto.fromEntity(member); // 변환 코드 간소화
     }
 
+//    // 전체 회원 조회
+//    @GetMapping("/members")
+//    public Result findMembers() {
+//        List<Member> findMembers = memberRepository.findAll();
+//        List<MemberResponseDto> collect = new ArrayList<>();
+//
+//        for (Member member : findMembers) {
+//            collect.add(MemberResponseDto.fromEntity(member));
+//        }
+//
+//        return new Result<>(collect.size(), collect);
+//    }
+
     // 전체 회원 조회
     @GetMapping("/members")
-    public Result findMembers() {
-        List<Member> findMembers = memberRepository.findAll();
-        List<MemberResponseDto> collect = new ArrayList<>();
+    public Result findMembers(
+            @RequestParam(defaultValue = "") String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size) {
 
-        for (Member member : findMembers) {
-            collect.add(MemberResponseDto.fromEntity(member));
-        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
+        Page<Member> memberPage = memberRepository.findByUsernameContaining(username, pageable);
 
-        return new Result<>(collect.size(), collect);
+        List<MemberResponseDto> members = memberPage.getContent().stream()
+                .map(MemberResponseDto::fromEntity)
+                .toList();
 
+        return new Result<>(memberPage.getTotalPages(), members);
     }
 
     // 회원 수정
@@ -84,7 +104,7 @@ public class MemberController {
     @Data
     @AllArgsConstructor
     static class Result<T> {
-        private int size;
+        private int totalPages;
         private T data;
     }
 }
