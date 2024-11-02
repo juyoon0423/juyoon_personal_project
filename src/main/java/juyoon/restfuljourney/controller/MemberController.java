@@ -5,6 +5,7 @@ import juyoon.restfuljourney.dto.MemberResponseDto;
 import juyoon.restfuljourney.entity.Member;
 import juyoon.restfuljourney.repository.MemberRepository;
 import juyoon.restfuljourney.service.MemberService;
+import juyoon.restfuljourney.service.S3Service;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +28,7 @@ import java.util.List;
 public class MemberController {
     private final MemberService memberService;
     private final MemberRepository memberRepository;
+    private final S3Service s3Service;
 
     // 회원가입
     @PostMapping("/register")
@@ -99,6 +103,19 @@ public class MemberController {
     public String delete(@PathVariable Long memberId) {
         memberService.delete(memberId);
         return "삭제 완료";
+    }
+
+    // 파일 업로드
+    @PostMapping("/upload")
+    public String uploadFile(@RequestParam("file") MultipartFile file) {
+        try {
+            String fileUrl = s3Service.uploadFile(file);
+            log.info("File uploaded successfully: {}", fileUrl);
+            return fileUrl;
+        } catch (IOException e) {
+            log.error("Failed to upload file", e);
+            throw new RuntimeException("파일 업로드에 실패했습니다.");
+        }
     }
 
     @Data
