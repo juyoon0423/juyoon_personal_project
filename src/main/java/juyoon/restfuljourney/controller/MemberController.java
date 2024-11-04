@@ -1,9 +1,10 @@
 package juyoon.restfuljourney.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import juyoon.restfuljourney.dto.MemberDto;
 import juyoon.restfuljourney.dto.MemberResponseDto;
 import juyoon.restfuljourney.entity.Member;
-import juyoon.restfuljourney.repository.MemberRepository;
 import juyoon.restfuljourney.service.MemberService;
 import juyoon.restfuljourney.service.S3Service;
 import lombok.AllArgsConstructor;
@@ -19,18 +20,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 public class MemberController {
+
     private final MemberService memberService;
-    private final MemberRepository memberRepository;
     private final S3Service s3Service;
 
-    // 회원가입
+    @Operation(summary = "Register a new member", description = "회원가입 API로 회원 정보를 받아 새로 등록합니다.")
     @PostMapping("/register")
     public MemberResponseDto register(@Validated @RequestBody MemberDto memberDto) {
         Member member = Member.builder()
@@ -44,40 +44,26 @@ public class MemberController {
         log.info("username={}, password={}, email={}", member.getUsername(), member.getPassword(), member.getEmail());
 
         Member registeredMember = memberService.findOne(id);
-        return MemberResponseDto.fromEntity(registeredMember); // 등록 후 엔티티를 Dto로 변환해 반환
+        return MemberResponseDto.fromEntity(registeredMember);
     }
 
-    // 회원 정보 조회
+    @Operation(summary = "Get member by ID", description = "회원 ID로 회원 정보를 조회합니다.")
     @GetMapping("/member/{memberId}")
-    public MemberResponseDto findOne(@PathVariable Long memberId) {
-        // 멤버 검색
+    public MemberResponseDto findOne(
+            @Parameter(description = "ID of the member to retrieve") @PathVariable Long memberId) {
         Member member = memberService.findOne(memberId);
-
-        return MemberResponseDto.fromEntity(member); // 변환 코드 간소화
+        return MemberResponseDto.fromEntity(member);
     }
 
-//    // 전체 회원 조회
-//    @GetMapping("/members")
-//    public Result findMembers() {
-//        List<Member> findMembers = memberRepository.findAll();
-//        List<MemberResponseDto> collect = new ArrayList<>();
-//
-//        for (Member member : findMembers) {
-//            collect.add(MemberResponseDto.fromEntity(member));
-//        }
-//
-//        return new Result<>(collect.size(), collect);
-//    }
-
-    // 전체 회원 조회
+    @Operation(summary = "Get all members", description = "전체 회원 정보를 페이징하여 조회합니다.")
     @GetMapping("/members")
     public Result findMembers(
-            @RequestParam(defaultValue = "") String username,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
+            @Parameter(description = "Username to search") @RequestParam(defaultValue = "") String username,
+            @Parameter(description = "Page number for pagination") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page") @RequestParam(defaultValue = "8") int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
-        Page<Member> memberPage = memberRepository.findByUsernameContaining(username, pageable);
+        Page<Member> memberPage = memberService.findMembersWithPaging(username, pageable);
 
         List<MemberResponseDto> members = memberPage.getContent().stream()
                 .map(MemberResponseDto::fromEntity)
@@ -86,26 +72,26 @@ public class MemberController {
         return new Result<>(memberPage.getTotalPages(), members);
     }
 
-    // 회원 수정
+    @Operation(summary = "Update a member", description = "회원 정보를 수정합니다.")
     @PutMapping("/editMember/{memberId}")
     public MemberResponseDto editMember(
-            @PathVariable Long memberId,
+            @Parameter(description = "ID of the member to update") @PathVariable Long memberId,
             @Validated @RequestBody MemberDto memberDto) {
 
         memberService.update(memberId, memberDto);
-
         Member findMember = memberService.findOne(memberId);
-        return MemberResponseDto.fromEntity(findMember); // 변환 코드 간소화
+        return MemberResponseDto.fromEntity(findMember);
     }
 
-    // 회원 탈퇴
+    @Operation(summary = "Delete a member", description = "회원 정보를 삭제합니다.")
     @DeleteMapping("/delete/{memberId}")
-    public String delete(@PathVariable Long memberId) {
+    public String delete(
+            @Parameter(description = "ID of the member to delete") @PathVariable Long memberId) {
         memberService.delete(memberId);
         return "삭제 완료";
     }
 
-    // 파일 업로드
+    @Operation(summary = "Upload a file to S3", description = "파일을 S3에 업로드하고, 해당 파일의 URL을 반환합니다.")
     @PostMapping("/upload")
     public String uploadFile(@RequestParam("file") MultipartFile file) {
         try {
