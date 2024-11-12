@@ -103,7 +103,6 @@ public class MemberController {
             throw new RuntimeException("파일 업로드에 실패했습니다.");
         }
     }
-
     @Data
     @AllArgsConstructor
     static class Result<T> {

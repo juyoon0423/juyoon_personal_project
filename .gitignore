@@ -5,21 +5,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### 운영 체제 ###
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Linux
-*~
-
-### STS (Spring Tool Suite) ###
+### STS ###
 .apt_generated
 .classpath
 .factorypath
@@ -32,7 +18,7 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea/
+.idea
 *.iws
 *.iml
 *.ipr
@@ -50,22 +36,4 @@ out/
 ### VS Code ###
 .vscode/
 
-### 빌드 및 배포 ###
-*.war
-*.jar
-*.ear
-target/
-bin/
-out/
-
-### 로그 파일 ###
-*.log
-*.gz
-
-### 환경 및 설정 파일 ###
-.env
-*.bak
-*.tmp
-
-### 특정 구성 파일 ###
 application.yml

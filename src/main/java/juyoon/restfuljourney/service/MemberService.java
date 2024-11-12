@@ -4,6 +4,7 @@ import juyoon.restfuljourney.dto.MemberDto;
 import juyoon.restfuljourney.entity.Member;
 import juyoon.restfuljourney.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -24,6 +26,7 @@ public class MemberService {
         Member member = new Member();
         member.setId(memberDto.getId());
         member.setUsername(memberDto.getUsername());
+        member.setPassword(memberDto.getPassword());
         member.setPassword(memberDto.getPassword());
         member.setEmail(memberDto.getEmail());
 
@@ -68,7 +71,6 @@ public class MemberService {
     public Page<Member> findMembersWithPaging(String username, Pageable pageable) {
         return memberRepository.findByUsernameContaining(username, pageable);
     }
-
 
 
 }
